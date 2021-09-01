@@ -11,6 +11,8 @@ export interface position {
     y: number
 }
 
+const SPEED = 10; //Movement speed in pixels
+
 export default class Player {
     public life:number
     public sprite
@@ -23,8 +25,22 @@ export default class Player {
         this.position = position
 
     }
-    
 
+    updateDirection(){
+        if(nextTile)
+    }
+
+    updatePosition(){
+        switch(this.direction) {
+            case(direction.LEFT): this.position.x -= SPEED
+            case(direction.RIGHT): this.position.x += SPEED
+            case(direction.UP): this.position.y -= SPEED
+            case(direction.DOWN): this.position.y += SPEED  
+        }
+    }
+    isWall(){
+
+    }
     //Getters and setters
 }
 
