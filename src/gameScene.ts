@@ -1,64 +1,61 @@
 import "phaser"
-
-const mapping = [
-    [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
-    [3,1,1,1,1,1,1,1,1,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,3,3,3,1,3,3,3,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,3,0,3,1,3,0,3,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,3,3,3,1,3,3,3,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,3,3,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,3,1,1,3,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,3,3,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
-    [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]
-]
-
+import { Movement } from "./logic/movement"
+import { Character } from "./logic/Character"
+import { Controls } from "./logic/controls"
+import { Map } from "./logic/map"
+import { Ghost } from "./logic/ghost"
 export default class gameScene extends Phaser.Scene {
 
+    private ghosts: Array<Ghost> = []
+    private pacman: Character
+    private gridMap: Map
+    private movement: Movement
+    private controls: Controls
 
     constructor(){
         super('gameScene')
     }
 
     preload(){
-        this.load.image('mapTiles', "assets/tileset.png")
+        this.load.image("tiles", "assets/tileset.png")
+        this.load.tilemapTiledJSON({key: "map1", url: "assets/tileMap.json"})
+        this.load.spritesheet('pacman', "assets/pacman3.png", {frameWidth:24})
+        this.load.spritesheet('ghosts', "assets/ghosts.png", {frameWidth:22} )
   
     }
 
     create(){
-        let map = this.make.tilemap({
-            data: mapping,
-            tileHeight: 24,
-            tileWidth: 24,
-            width: 25,
-            height: 25
-        })
-        let tiles = map.addTilesetImage('mapTiles')
-        map.createLayer(0,tiles,0,0)
+        this.add.image(0,0,"tiles")
+        const map = this.make.tilemap({key: "map1"})
+        let tileset = map.addTilesetImage("blocks", "tiles")
 
+        for (let i=0; i < map.layers.length; i++){
+            map.createLayer(i,tileset, 0, 0).setDepth(i)
+        }
         
-        //this.add.image(400, 200, 'logo')
-        ///var newGame = this.add.text(400 , 400 , "New Game", {font: "Press Start 2P"}).setInteractive()
-        
+
+        let characterSprite = this.add.sprite(0,0,'pacman')
+        characterSprite.setDepth(2)
+        this.pacman = new Character(characterSprite,new Phaser.Math.Vector2(1,1))
+        this.createGhosts()
+        this.controls = new Controls(this.input, this.pacman )
+        this.gridMap = new Map(map)
+        let characterArray = [this.pacman].concat(this.ghosts)
+        this.movement = new Movement(characterArray, this.gridMap)
 
     }
-    
-    down(){
+    update(_time: number, delta: number){
+        this.controls.updateKeyPress()
+        this.movement.update(delta)
+    }
+    createGhosts(){
+        for(let i=0;i<3;i++){
+            var characterSprite = this.add.sprite(i+9,10,'ghosts',i*4)
+            characterSprite.setDepth(2)
+       
+        }
+        let ghost = new Character(characterSprite,new Phaser.Math.Vector2(9,10))
+        this.ghosts.push(ghost)
 
     }
 

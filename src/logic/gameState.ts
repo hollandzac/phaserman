@@ -27,7 +27,7 @@ export default class GameState {
       }
   }
 
-  death() {
+  death():boolean {
     if (this.life <= 1) {
       return false;
     } else {

@@ -1,19 +1,19 @@
 
-import { Player } from "./player"
+import { Character } from "./Character"
 import { Direction } from "../utils/directionUtils"
 
 export class Controls {
     private input: Phaser.Input.InputPlugin
-    private pacman: Player
+    private pacman: Character
 
     
-    constructor(input: Phaser.Input.InputPlugin, pacman: Player ){
+    constructor(input: Phaser.Input.InputPlugin, pacman: Character ){
         this.input = input
         this.pacman = pacman
 
     }
 
-    update() {
+    updateKeyPress() {
         const cursor = this.input.keyboard.createCursorKeys()
 
         if(cursor.left.isDown) {
