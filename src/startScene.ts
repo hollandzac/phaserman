@@ -11,12 +11,19 @@ export default class startScene extends Phaser.Scene {
 
     preload(){
         this.load.image('logo', "assets/logo.png")
+       
   
     }
 
     create(){
         let exit = this.add.text(700 , 100 , "Exit", {font: "Press Start 2P"}).setInteractive()
         this.hoverOption(exit)
+
+        exit.on("pointerdown", () => {
+            console.log("EXIT")
+            window.close()
+        })
+
         this.add.text(100,550, "Created by Zachary Holland")
         this.add.image(400, 200, 'logo')
         this.loadMainMenu()
